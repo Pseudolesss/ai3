@@ -1,9 +1,8 @@
 # Complete this class for all parts of the project
 
 from pacman_module.game import Agent
-from pacman_module.pacman import Directions, GhostRules
-import numpy as np
 from pacman_module import util
+import numpy as np
 
 
 class BeliefStateAgent(Agent):
@@ -59,7 +58,7 @@ class BeliefStateAgent(Agent):
             k = 0
             for x in range(evidence[0] - w, evidence[0] + w):
                 for y in range(evidence[1] - w, evidence[1] + w):
-                    if evidence[0]//width == x//width and evidence[1]//height == y//height:
+                    if x in range(width) and y in range(height):
                         prob[x][y] = 1
                         k += 1
 
@@ -88,25 +87,25 @@ class BeliefStateAgent(Agent):
         pEast = 0
         nbAdj = 0  # Nb of valid adjacent tiles
 
-        if (x-1)//width == x//width:
+        if (x-1) in range(width):
             nbAdj += 1
             pEast = p 
-        if (x+1)//width == x//width:
+        if (x+1) in range(width):
             nbAdj += 1
-        if (y-1)//height == y//height:
-            nbAdj +=1
-        if (y+1)//height == y//height:
-            nbAdj +=1
+        if (y-1) in range(height):
+            nbAdj += 1
+        if (y+1) in range(height):
+            nbAdj += 1
 
         summation = 0
 
-        if (x-1)//width == x//width:
-            summation += pastProb[x-1][y] * ( pEast + (1-pEast)/nbAdj )
-        if (x+1)//width == x//width:
+        if (x-1) in range(width):
+            summation += pastProb[x-1][y] * (pEast + (1-pEast)/nbAdj)
+        if (x+1) in range(width):
             summation += pastProb[x+1][y] * (1-pEast)/nbAdj
-        if (y-1)//height == y//height:
+        if (y-1) in range(height):
             summation += pastProb[x][y-1] * (1-pEast)/nbAdj
-        if (y+1)//height == y//height:
+        if (y+1) in range(height):
             summation += pastProb[x][y+1] * (1-pEast)/nbAdj
 
         return summation
