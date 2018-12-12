@@ -4,7 +4,8 @@ from pacman_module.game import Agent
 from pacman_module.pacman import Directions, GhostRules
 import numpy as np
 from pacman_module import util
-
+import os  # @TODO Suppress this little piece of code
+import matplotlib.pyplot as plt
 
 class BeliefStateAgent(Agent):
     def __init__(self, args):
@@ -28,6 +29,8 @@ class BeliefStateAgent(Agent):
         # Probability for 'leftturn' ghost to take 'EAST' action
         # when 'EAST' is legal (see instructions)
         self.p = self.args.p
+        self.i = 0  # @TODO erase it
+        self.l = list()
 
     def updateAndGetBeliefStates(self, evidences):
         """
@@ -162,5 +165,42 @@ class BeliefStateAgent(Agent):
             self.beliefGhostStates = state.getGhostBeliefStates()
         if self.walls is None:
             self.walls = state.getWalls()
-        return self.updateAndGetBeliefStates(
+
+            # @TODO Put this back to normal
+        ret = self.updateAndGetBeliefStates(
             self._computeNoisyPositions(state))
+
+        if self.i < 25:
+            debug = ret[0]
+            self.l.append(np.max(debug))
+            self.i += 1
+            #if debug == 1: # To Stop as soon as convergence happens
+                #self.i = 25
+
+        prefix = 'data/'  # To indicate path
+
+        if self.i == 25:
+
+            if os.path.exists(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".txt")):
+                os.remove(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".txt"))
+
+            f = open(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".txt"), "a")
+            first = True
+            for data in self.l:
+                if first:
+                    first = False
+                    f.write(str(data))
+                else:
+                    f.write("," + str(data))
+            self.i += 1
+            f.close()
+            print("Done")
+            plt.plot(range(1, len(self.l)+1), self.l)
+            plt.xlabel('Time step')
+            plt.ylabel('Maximum probability')
+            plt.title('Bayes Filter')
+            plt.axis([0, self.i, 0, 1])
+            plt.savefig(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".pdf"), bbox_inches='tight')
+            plt.show()
+
+        return ret
