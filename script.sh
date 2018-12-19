@@ -9,7 +9,7 @@ do
     while [ $x -le 75 ]
     do
         python run.py --bsagentfile beliefstateagent.py --layout observer --w $w --p 0.$x --nghosts 1 &
-        sleep 15 && kill $!
+        sleep 40 && kill $!
         ((x=$x+25))
     done
     ((w=$w+2))

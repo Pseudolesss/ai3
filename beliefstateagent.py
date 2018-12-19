@@ -31,6 +31,7 @@ class BeliefStateAgent(Agent):
         self.p = self.args.p
         self.i = 0  # @TODO erase it
         self.l = list()
+        self.v = list()
 
     def updateAndGetBeliefStates(self, evidences):
         """
@@ -170,37 +171,57 @@ class BeliefStateAgent(Agent):
         ret = self.updateAndGetBeliefStates(
             self._computeNoisyPositions(state))
 
-        if self.i < 25:
-            debug = ret[0]
-            self.l.append(np.max(debug))
+        limit = 150
+
+        if self.i < limit:
+            debug = ret[0].copy()
+            buff = list()
+            #self.l.append(np.max(debug))
+
+            for k in range(len(debug)):
+                for l in range(len(debug[0])):
+                    if debug[k][l] != 0:
+                        buff.append((debug[k][l], k*len(debug[0]) + l))
+
+            mean = 0
+            var = 0
+            for k in range(len(buff)):
+                mean += buff[k][0] * buff[k][1]
+
+            for k in range(len(buff)):
+                var += buff[k][0] * (buff[k][1] - mean)**2
+
+            self.l.append(mean)
+            self.v.append(var)
             self.i += 1
             #if debug == 1: # To Stop as soon as convergence happens
                 #self.i = 25
 
         prefix = 'data/'  # To indicate path
 
-        if self.i == 25:
+        if self.i == limit:
 
-            if os.path.exists(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".txt")):
-                os.remove(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".txt"))
-
-            f = open(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".txt"), "a")
-            first = True
-            for data in self.l:
-                if first:
-                    first = False
-                    f.write(str(data))
-                else:
-                    f.write("," + str(data))
+            # if os.path.exists(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".txt")):
+            #     os.remove(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".txt"))
+            #
+            # f = open(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".txt"), "a")
+            # first = True
+            # for data in self.l:
+            #     if first:
+            #         first = False
+            #         f.write(str(data))
+            #     else:
+            #         f.write("," + str(data))
+            #f.close()
             self.i += 1
-            f.close()
             print("Done")
-            plt.plot(range(1, len(self.l)+1), self.l)
+            plt.plot(range(1, len(self.l)+1), self.l, 'b')
+            plt.plot(range(1, len(self.v)+1), self.v, 'r')
             plt.xlabel('Time step')
-            plt.ylabel('Maximum probability')
-            plt.title('Bayes Filter')
-            plt.axis([0, self.i, 0, 1])
-            plt.savefig(os.path.join(prefix, str(self.w) + "-" + str(self.p) + ".pdf"), bbox_inches='tight')
+            plt.ylabel('Value')
+            plt.title('Bayes Filter: RV mean (blue) and variance (red)')
+            plt.axis([0, self.i, 0, self.walls.width * self.walls.height - 1])
+            plt.savefig(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".pdf"), bbox_inches='tight')
             plt.show()
 
         return ret
