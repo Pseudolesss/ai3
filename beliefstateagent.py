@@ -171,7 +171,7 @@ class BeliefStateAgent(Agent):
         ret = self.updateAndGetBeliefStates(
             self._computeNoisyPositions(state))
 
-        limit = 150
+        limit = 50
 
         if self.i < limit:
             debug = ret[0].copy()
@@ -220,8 +220,9 @@ class BeliefStateAgent(Agent):
             plt.xlabel('Time step')
             plt.ylabel('Value')
             plt.title('Bayes Filter: RV mean (blue) and variance (red)')
-            plt.axis([0, self.i, 0, self.walls.width * self.walls.height - 1])
-            plt.savefig(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".pdf"), bbox_inches='tight')
+            #plt.axis([0, self.i, 0, self.walls.width * self.walls.height - 1])
+            plt.axis('auto')
+            plt.savefig(os.path.join(prefix, "mv" + str(self.w) + "-" + str(int(self.p*100)) + ".pdf"), bbox_inches='tight')
             plt.show()
 
         return ret
