@@ -33,6 +33,8 @@ class BeliefStateAgent(Agent):
         self.i = 0  # @TODO erase it
         self.l = list()
         self.v = list()
+        self.result = 0
+        self.first = True
 
     def updateAndGetBeliefStates(self, evidences):
         """
@@ -220,7 +222,20 @@ class BeliefStateAgent(Agent):
         ret = self.updateAndGetBeliefStates(
             self._computeNoisyPositions(state))
 
-        limit = 250
+        limit = 80
+        prefix = 'data/'  # To indicate path
+
+        if self.first:
+            self.first = False
+            if os.path.exists(os.path.join(prefix, "mean" + str(self.w) + "-" + str(int(self.p * 100)) + ".txt" )):
+                self.result = np.loadtxt(os.path.join(prefix, "mean" + str(self.w) + "-" + str(int(self.p * 100)) + ".txt"), delimiter=',')
+            else:
+                self.result = np.zeros(limit + 1)
+            self.result[0]+=1
+
+
+
+        actualFactor = self.result[0]
 
         if self.i < limit:
             debug = ret[0].copy()
@@ -230,7 +245,9 @@ class BeliefStateAgent(Agent):
                     if elem != 0:
                         sum += elem * math.log2(elem)
             sum = -sum
-            self.l.append(sum)
+
+            self.result[self.i+1] = (self.result[self.i+1] * (actualFactor-1) + sum)/actualFactor
+
             # buff = list()
             # #self.l.append(np.max(debug))
             #
@@ -253,31 +270,30 @@ class BeliefStateAgent(Agent):
             #if debug == 1: # To Stop as soon as convergence happens
                 #self.i = 25
 
-        prefix = 'data/'  # To indicate path
-
         if self.i == limit:
 
-            # if os.path.exists(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".txt")):
-            #     os.remove(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".txt"))
-            #
-            # f = open(os.path.join(prefix, "mv" + str(self.w) + "-" + str(self.p) + ".txt"), "a")
-            # first = True
-            # for data in self.l:
-            #     if first:
-            #         first = False
-            #         f.write(str(data))
-            #     else:
-            #         f.write("," + str(data))
-            #f.close()
+            if os.path.exists(os.path.join(prefix, "mean" + str(self.w) + "-" + str(int(self.p * 100)) + ".txt")):
+                os.remove(os.path.join(prefix, "mean" + str(self.w) + "-" + str(int(self.p * 100)) + ".txt"))
+
+            f = open(os.path.join(prefix, "mean" + str(self.w) + "-" + str(int(self.p * 100)) + ".txt"), "a")
+            first = True
+            for data in self.result:
+                if first:
+                    first = False
+                    f.write(str(data))
+                else:
+                    f.write("," + str(data))
+            f.close()
             self.i += 1
             print("Done")
-            plt.plot(range(1, len(self.l)+1), self.l, 'b')
-            plt.xlabel('Time step')
-            plt.ylabel('Entropy')
-            plt.title('Bayes Filter: Entropy')
-            #plt.axis([0, self.i, 0, self.wal0ls.width * self.walls.height - 1])
-            plt.axis([0, limit, 0, 5])
-            plt.savefig(os.path.join(prefix, "en" + str(self.w) + "-" + str(int(self.p*100)) + ".pdf"), bbox_inches='tight')
-            plt.show()
+            exit()
+            # plt.plot(range(1, len(self.l)+1), self.l, 'b')
+            # plt.xlabel('Time step')
+            # plt.ylabel('Mean')
+            # plt.title('Bayes Filter: Entropy mean over time')
+            # #plt.axis([0, self.i, 0, self.wal0ls.width * self.walls.height - 1])
+            # plt.axis([0, limit, 0, 5])
+            # plt.savefig(os.path.join(prefix, "mean" + str(self.w) + "-" + str(int(self.p*100)) + ".pdf"), bbox_inches='tight')
+            # plt.show()
 
         return ret

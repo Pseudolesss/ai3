@@ -5,12 +5,16 @@ clear
 w=1
 while [ $w -le 5 ]
 do
-    x=25
-    while [ $x -le 75 ]
+    x=10
+    while [ $x -le 90 ]
     do
-        python run.py --bsagentfile beliefstateagent.py --layout observer --w $w --p 0.$x --nghosts 1 &
-        sleep 40 && kill $!
-        ((x=$x+25))
+        i=0
+        while [ $i -le 99 ]
+        do
+            python run.py --bsagentfile beliefstateagent.py --layout observer --w $w --p 0.$x --nghosts 1 --ghostagent leftrandy
+        ((i=$i+1))
+        done
+    ((x=$x+80))
     done
     ((w=$w+2))
 done
